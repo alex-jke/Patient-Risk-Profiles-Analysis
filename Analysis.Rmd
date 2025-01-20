@@ -11,11 +11,37 @@ library(tidyverse)
 library(visdat)
 ```
 
+### Our Idea
+was to investigate the effects and interactions between different diseases, especially between those affecting the physical and those affecting the cognitive wellbeing of an individual.
+In order to do this we use a tidy-tuesday dataset (patient risk profiles) that "contains 100 simulated patient's medical history features and the predicted 1-year risk of 14 outcomes based on each patient's medical history features. The predictions used real logistic regression models developed on a large real world healthcare dataset."
+
+### Limitations:
+While this dataset brings the advantage of indirectly containing a lot of data, it only simulated 100 people. This means we are forced to rely, to some extent, on the previously done statistics, as the statistical power of 100 datapoints is limited. Another limitation, related to the first is that the values provided in the dataset are the results of the regression model the authors developed. Thus, we are bounded by their statistical regression model. Despite this, we believe these factors to be negligible; The dataset was published as a tidy-tuesday dataset, which indicates a reliability and quality sufficient for the scope of this project.
+
+### Hypothesis:
+Patients aged 65-69 with prior occurrences of cardiovascular-related conditions (e.g., angina, atrial fibrillation, coronary artery disease) are at higher predicted risk of dementia compared to other age groups with similar conditions.
+#
+We believe this for the following reasons:
+
+1. **Aging and Cognitive Decline**
+   + Aging is the primary risk factor for cognitive decline and dementia. The age group 65-69 falls into a critical period when many individuals begin to show early signs of cognitive impairment, which may develop into dementia. As such, the risk of Alzheimer's growths exponentially with age from less than 5% at 65 to 40% beyond the age of 85 [See The Impact of Age on Cognition]
+   + Neurological resilience diminishes with age, making the brain more vulnerable to damage from systemic conditions like cardiovascular diseases [See Aging leads to altered microglial function that reduces brain resiliency increasing vulnerability to neurodegenerative diseases].
+2. **Cardiovascular Conditions and Cerebral Health**
+   + Cardiovascular conditions such as angina, atrial fibrillation, and coronary artery disease can impair blood flow to the brain, leading to vascular contributions to cognitive impairment and dementia. Reduced blood flow and microvascular damage to the brain could accelerate neurodegeneration.[See Neurovascular dysfunction and neurodegeneration in dementia and Alzheimer's disease]
+   + Atrial fibrillation, in particular, increases the risk of stroke and microinfarcts in the brain, both of which are linked to an increased likelihood of developing dementia. [See Atrial Fibrillation, Cognitive Decline and Dementia]
+3. **Heightened Risk in the 65-69 Age Group**
+   + At ages 65-69, patients are more likely to experience the combined effects of aging and systemic diseases compared to younger groups, but they may not yet have the compensatory mechanisms seen in older populations who have "adapted" to chronic health changes. Furthermore, the unwillingness to acknowledge one-self aging might adversely affect the willingness to seek these adaptions.
+   + This age group is often where early signs of dementia begin to appear. Cardiovascular conditions can act as triggers to or exacerbate the progression of this process.
+
 ## Get the dataset and check the na values
 ```{r}
-tuesdata <- read.csv("./data/patient_risk_profiles.csv")
+#tuesdata <- read.csv("./data/patient_risk_profiles.csv")
+tuesdata <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/main/data/2023/2023-10-24/patient_risk_profiles.csv')
 ```
-## Rename all the columns to increasing numbers to make it easier to visualize how much of the data is missing as opposed to what data is missing. That is, so the column names do not distract from the visualization.
+#
+#
+#
+#### \n Rename all the columns to increasing numbers to make it easier to visualize how much of the data is missing as opposed to what data is missing. That is, so the column names do not distract from the visualization.
 
 ```{r}
 columns <- colnames(tuesdata) %>%
@@ -33,4 +59,51 @@ present_percent <- visualization_df %>%
     pull(value) %>%
     first()
 ```
-## As can be seen also in the visualization above, ```r present_percent```% of the data is present.
+#### As can be seen also in the visualization above, `r present_percent*100`% of the data is present.
+
+### Data Cleaning
+Now select
+```{r}
+data <- tuesdata %>%
+  select(personId,
+         c60_64 = `age group:  60 -  64`,
+         c65_69 = `age group:  65 -  69`,
+         c70_74 = `age group:  70 -  74`,
+         Angina = `Angina events in prior year`,
+         AF = `Atrial Fibrillation, incident in prior year`,
+         CAD = `Coronary artery disease (CAD) in prior year`,
+         Dementia_risk = `predicted risk of Dementia`)
+head(data)
+```
+
+## Feature Engineering:
+Create one column containing if cardiovascular happened.
+```{r}
+data <- data %>%
+        mutate(Cardio_Condition = ifelse(
+                Angina == 1 | AF == 1 | CAD == 1, 1, 0
+        ))
+head(data %>% select(personId, Angina, AF, CAD, Cardio_Condition))
+```
+## Exploratory Data Analysis
+```{r}
+```
+
+## Hypothesis Testing
+```{r}
+```
+
+## Results
+results
+
+## Conclusion
+conclusion
+
+## Next Steps
+next steps
+
+## Sources:
+1. Alonso A, Arenas de Larriva AP. Atrial Fibrillation, Cognitive Decline And Dementia. Eur Cardiol. 2016 Summer;11(1):49-53. doi: 10.15420/ecr.2016:13:2. PMID: 27547248; PMCID: PMC4988519.
+2. Bickford PC, Flowers A, Grimmig B. Aging leads to altered microglial function that reduces brain resiliency increasing vulnerability to neurodegenerative diseases. Exp Gerontol. 2017 Aug;94:4-8. doi: 10.1016/j.exger.2017.01.027. Epub 2017 Feb 2. PMID: 28163132; PMCID: PMC5469713.
+3. Murman DL. The Impact of Age on Cognition. Semin Hear. 2015 Aug;36(3):111-21. doi: 10.1055/s-0035-1555115. PMID: 27516712; PMCID: PMC4906299.
+4. Nelson AR, Sweeney MD, Sagare AP, Zlokovic BV. Neurovascular dysfunction and neurodegeneration in dementia and Alzheimer's disease. Biochim Biophys Acta. 2016 May;1862(5):887-900. doi: 10.1016/j.bbadis.2015.12.016. Epub 2015 Dec 17. PMID: 26705676; PMCID: PMC4821735.
