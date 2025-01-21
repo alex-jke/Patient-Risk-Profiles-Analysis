@@ -24,14 +24,18 @@ Patients aged 65-69 with prior occurrences of cardiovascular-related conditions 
 We believe this for the following reasons:
 
 1. **Aging and Cognitive Decline**
-   + Aging is the primary risk factor for cognitive decline and dementia. The age group 65-69 falls into a critical period when many individuals begin to show early signs of cognitive impairment, which may develop into dementia. As such, the risk of Alzheimer's growths exponentially with age from less than 5% at 65 to 40% beyond the age of 85 [See The Impact of Age on Cognition]
+   + Aging is the primary risk factor for cognitive decline and dementia. The age group 65-69 falls into a critical period when many individuals begin to show early signs of cognitive impairment, which may develop into dementia. For example, the risk of Alzheimer's disease growths exponentially with age from less than 5% at 65 to 40% beyond the age of 85 [See The Impact of Age on Cognition]
    + Neurological resilience diminishes with age, making the brain more vulnerable to damage from systemic conditions like cardiovascular diseases [See Aging leads to altered microglial function that reduces brain resiliency increasing vulnerability to neurodegenerative diseases].
+   + Sleep quality decreases with growing age, which affects the glymphatic system. Lower glymphatic clearance may lead to proteine accumulation in the brain, which is associated with neurodegenerative diseases like Alzheimer's. [See Glymphatic failure as a final common pathway to dementia]
 2. **Cardiovascular Conditions and Cerebral Health**
    + Cardiovascular conditions such as angina, atrial fibrillation, and coronary artery disease can impair blood flow to the brain, leading to vascular contributions to cognitive impairment and dementia. Reduced blood flow and microvascular damage to the brain could accelerate neurodegeneration.[See Neurovascular dysfunction and neurodegeneration in dementia and Alzheimer's disease]
    + Atrial fibrillation, in particular, increases the risk of stroke and microinfarcts in the brain, both of which are linked to an increased likelihood of developing dementia. [See Atrial Fibrillation, Cognitive Decline and Dementia]
 3. **Heightened Risk in the 65-69 Age Group**
    + At ages 65-69, patients are more likely to experience the combined effects of aging and systemic diseases compared to younger groups, but they may not yet have the compensatory mechanisms seen in older populations who have "adapted" to chronic health changes. Furthermore, the unwillingness to acknowledge one-self aging might adversely affect the willingness to seek these adaptions.
    + This age group is often where early signs of dementia begin to appear. Cardiovascular conditions can act as triggers to or exacerbate the progression of this process.
+
+#### Presumed Causal Relationships:
+![Causal Relationships](data/Blank diagram - Kausalitätsgraph.svg)
 
 ## Get the dataset and check the na values
 ```{r}
