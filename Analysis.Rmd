@@ -66,14 +66,14 @@ Now select
 ```{r}
 data <- tuesdata %>%
   select(personId,
-         c60_64 = `age group:  60 -  64`,
-         c65_69 = `age group:  65 -  69`,
-         c70_74 = `age group:  70 -  74`,
-         c75_79 = `age group:  75 -  79`,
+         starts_with("age group:"),
          Angina = `Angina events in prior year`,
          AF = `Atrial Fibrillation, incident in prior year`,
          CAD = `Coronary artery disease (CAD) in prior year`,
          Dementia_risk = `predicted risk of Dementia`)
+colnames(data) <- gsub(pattern = "age group:  ", replacement ="ag", colnames(data))
+colnames(data) <- gsub(pattern = " -  ", replacement ="_", colnames(data))
+colnames(data) <- gsub(pattern = " ", replacement ="", colnames(data))
 head(data)
 ```
 
@@ -82,15 +82,13 @@ Create one column containing if cardiovascular happened.
 ```{r}
 data <- data %>%
         mutate(Cardio_Condition = ifelse(
-                Angina == 1 | AF == 1 | CAD == 1, 1, 0),
-                Age_Group = ifelse(
-                        c60_64 == 1, "60-64",
-                        ifelse(c65_69 == 1, "65-69",
-                               ifelse(c70_74 == 1, "70-74",
-                                      ifelse(c75_79 == 1, "75-79", NA) )
-                        )
-        )) %>%
-        filter(!is.na(Age_Group))
+                Angina == 1 | AF == 1 | CAD == 1, 1, 0)
+        ) %>%
+        pivot_longer(cols = starts_with("ag"),
+                     names_to = "Age_Group",
+                     values_to = "Age_Group_Value") %>%
+        filter(Age_Group_Value == 1) %>%
+        select(-Age_Group_Value)
 head(data %>% select(personId, Age_Group, Angina, AF, CAD, Cardio_Condition))
 ```
 The data now contains the columns `r colnames(data)` and `r nrow(data)` rows.
@@ -110,6 +108,15 @@ ggplot(data, aes(x = Dementia_risk, y = 1, color = Age_Group, fill = Age_Group))
                 x = "Predicted Risk of Dementia",
                 y = "1",
                 color = "Age Group")
+avg_risk <- data %>%
+        group_by(Age_Group) %>%
+        summarise(avg_risk = mean(Dementia_risk, na.rm = TRUE))
+ggplot(avg_risk, aes(x = Age_Group, y = avg_risk, fill = Age_Group)) +
+        geom_bar(stat = "identity") +
+        labs(title = "Average Predicted Risk of Dementia by Age Group",
+                x = "Age Group",
+                y = "Average Predicted Risk of Dementia",
+                fill = "Age Group")
 ```
 
 ## Hypothesis Testing
