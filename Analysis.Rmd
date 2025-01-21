@@ -35,7 +35,7 @@ We believe this for the following reasons:
    + This age group is often where early signs of dementia begin to appear. Cardiovascular conditions can act as triggers to or exacerbate the progression of this process.
 
 #### Presumed Causal Relationships:
-![Causal Relationships](data/Blank diagram - Kausalitätsgraph.svg)
+![Causal Relationships](causality_graph.svg)
 
 ## Get the dataset and check the na values
 ```{r}
