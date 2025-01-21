@@ -20,7 +20,7 @@ While this dataset brings the advantage of indirectly containing a lot of data, 
 
 ### Hypothesis:
 Patients aged 65-69 with prior occurrences of cardiovascular-related conditions (e.g., angina, atrial fibrillation, coronary artery disease) are at higher predicted risk of dementia compared to other age groups with similar conditions.
-#
+
 We believe this for the following reasons:
 
 1. **Aging and Cognitive Decline**
@@ -38,10 +38,10 @@ We believe this for the following reasons:
 #tuesdata <- read.csv("./data/patient_risk_profiles.csv")
 tuesdata <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/main/data/2023/2023-10-24/patient_risk_profiles.csv')
 ```
-#
-#
-#
-#### \n Rename all the columns to increasing numbers to make it easier to visualize how much of the data is missing as opposed to what data is missing. That is, so the column names do not distract from the visualization.
+
+
+
+#### Rename all the columns to increasing numbers to make it easier to visualize how much of the data is missing as opposed to what data is missing. That is, so the column names do not distract from the visualization.
 
 ```{r}
 columns <- colnames(tuesdata) %>%
@@ -69,6 +69,7 @@ data <- tuesdata %>%
          c60_64 = `age group:  60 -  64`,
          c65_69 = `age group:  65 -  69`,
          c70_74 = `age group:  70 -  74`,
+         c75_79 = `age group:  75 -  79`,
          Angina = `Angina events in prior year`,
          AF = `Atrial Fibrillation, incident in prior year`,
          CAD = `Coronary artery disease (CAD) in prior year`,
@@ -81,12 +82,34 @@ Create one column containing if cardiovascular happened.
 ```{r}
 data <- data %>%
         mutate(Cardio_Condition = ifelse(
-                Angina == 1 | AF == 1 | CAD == 1, 1, 0
-        ))
-head(data %>% select(personId, Angina, AF, CAD, Cardio_Condition))
+                Angina == 1 | AF == 1 | CAD == 1, 1, 0),
+                Age_Group = ifelse(
+                        c60_64 == 1, "60-64",
+                        ifelse(c65_69 == 1, "65-69",
+                               ifelse(c70_74 == 1, "70-74",
+                                      ifelse(c75_79 == 1, "75-79", NA) )
+                        )
+        )) %>%
+        filter(!is.na(Age_Group))
+head(data %>% select(personId, Age_Group, Angina, AF, CAD, Cardio_Condition))
 ```
+The data now contains the columns `r colnames(data)` and `r nrow(data)` rows.
 ## Exploratory Data Analysis
 ```{r}
+ggplot(data, aes(x = Dementia_risk, fill = Age_Group)) +
+        geom_density(alpha = 0.5) +
+        labs(title = "Predicted Risk of Dementia by Age Group",
+                x = "Predicted Risk of Dementia",
+                y = "Density",
+                fill = "Age Group")
+
+ggplot(data, aes(x = Dementia_risk, y = 1, color = Age_Group, fill = Age_Group)) +
+        #geom_jitter(width = 0.01, height = 0.0) +
+        geom_bar(stat = "identity")
+        labs(title = "Predicted Risk of Dementia by Age Group",
+                x = "Predicted Risk of Dementia",
+                y = "1",
+                color = "Age Group")
 ```
 
 ## Hypothesis Testing
