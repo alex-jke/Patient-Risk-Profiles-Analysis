@@ -128,6 +128,23 @@ The exploratory data analysis focuses on understanding the relationship between 
 Bar plots visualize the average dementia risks for both groups, showing that individuals with cardiovascular conditions generally have higher predicted risks of dementia across most age groups. The relative difference in dementia risk between these groups is also calculated and visualized, highlighting age groups where cardiovascular conditions are associated with greater disparities in risk.
 
 ```{r}
+avg_risk <- cleaned_data %>%
+        group_by(Age_Group) %>%
+        summarise(avg_risk = mean(Dementia_risk, na.rm = TRUE))
+
+ggplot(avg_risk, aes(x = Age_Group, y = avg_risk, fill = Age_Group)) +
+        geom_bar(stat = "identity") +
+        labs(title = "Average Predicted Risk of Dementia by Age Group",
+             x = "Age Group",
+             y = "Average Predicted Risk of Dementia",
+             fill = "Age Group")
+```
+
+We first explore the average predicted risk of dementia across different age groups. The bar plot above shows that the average predicted risk of dementia generally increases with age, which is consistent with existing research on the relationship between age and dementia risk. The plot also provides a baseline for comparing the dementia risk between individuals with and without cardiovascular conditions.
+
+For the following analyses, we aggregate over the age groups to compare the dementia risk between individuals with and without cardiovascular conditions for a given age group. Additionally, we explore how many datapoints are available for each age group in total and how many of those have cardiovascular conditions.
+
+```{r}
 heart_people <- cleaned_data %>%
         filter(Cardio_Condition == 1) %>% # only the people with heart
         group_by(Age_Group) %>%
@@ -142,10 +159,15 @@ all_people <- no_heart_people %>%
         left_join(heart_people, by = "Age_Group") %>%
         mutate(Dementia_risk_diff = Dementia_risk_heart - Dementia_risk_no_heart) %>%
         mutate(amount = without_heart + with_heart) %>%
-        select(Age_Group, Dementia_risk_diff, Dementia_risk_heart, Dementia_risk_no_heart, amount, with_heart) %>%
+        select(Age_Group, Dementia_risk_heart, Dementia_risk_no_heart, with_heart, without_heart, Dementia_risk_diff, amount) %>%
         arrange(desc(Dementia_risk_diff))
 
-all_people
+head(all_people)
+```
+We find, that in the age group of particular interest (65-69) there is `r all_people$with_heart[all_people$Age_Group == "ag65_69"]` person with cardiovascular conditions and `r all_people$without_heart[all_people$Age_Group == "ag65_69"]` people without cardiovascular conditions. This is a very small sample size, which might limit the statistical power of the following analysis.
+
+Next, we explore the relative difference in predicted dementia risk between individuals with and without cardiovascular conditions across the age groups. The bar plot below visualizes the average predicted dementia risk across the age groups for the two groups (with and without cardiovascular conditions).
+```{r}
 
 # plot both the avg dementia risk for people with and without heart conditions
 ggplot(all_people, aes(x = Age_Group)) +
@@ -155,7 +177,14 @@ ggplot(all_people, aes(x = Age_Group)) +
                 x = "Age Group",
                 y = "Average Predicted Risk of Dementia",
                 fill = "Heart Condition")
+```
 
+The plot shows consistently higher average predicted dementia risks for individuals with cardiovascular conditions compared to those without across all age groups. This trend suggests that the presence of cardiovascular conditions may be associated with an increased risk of dementia, regardless of age.
+Furthermore, we can observe this higher risk to not be of a constant magnitude across the age groups. The relative difference in predicted dementia risk between individuals with and without cardiovascular conditions is calculated and visualized in the next plot.
+
+A higher relative difference indicates a greater disparity in dementia risk between the two groups. The bar plot below visualizes the relative difference in predicted dementia risk across the age groups, highlighting where the presence of cardiovascular conditions is associated with a more pronounced increase in dementia risk.
+For the age group 65-69, the relative difference in predicted dementia risk is `r all_people$Dementia_risk_diff[all_people$Age_Group == "ag65_69"]`. If our hypothesis is correct, this value should be higher than in other age groups. This, however, does not appear to be the case.
+```{r}
 relative_difference <- all_people %>%
         mutate(relative_diff = Dementia_risk_heart / Dementia_risk_no_heart) %>%
         arrange(desc(relative_diff))
@@ -166,52 +195,49 @@ ggplot(relative_difference, aes(x = Age_Group, y = relative_diff, fill = Age_Gro
                 x = "Age Group",
                 y = "Relative Difference in Predicted Risk of Dementia",
                 fill = "Age Group")
-
-relavant_data <- cleaned_data
 ```
-Next, we explored how the dementia risk distribution varies across the two groups with and without prior cardiovascular
-conditions. The plot shows that there is a tendency for the peaks at higher dementia risk to belong to the group with cardiovascular conditions.
+
+We can see that the relative difference in predicted dementia risk between individuals with and without cardiovascular conditions varies across the age groups. However, due to the small sample size, we do not know if this variation is statistically significant. The age group 65-69 does not show a particularly high relative difference compared to other age groups, which does not support our hypothesis. The age group 40-44 shows the highest relative difference, which might be due to the small sample size and the inherent variability in the data. This age group contains only `r all_people$with_heart[all_people$Age_Group == "ag40_44"]` person with and `r all_people$without_heart[all_people$Age_Group == "ag40_44"]` person without cardiovascular conditions. This small sample size might lead to a higher relative difference due to the inherent variability in the data.
+
+Now, we explore the distribution of the predicted risk of dementia for people with and without cardiovascular conditions to gain further insights into the relationship between these factors. To do so, we first convert the age groups to numeric values to create a continuous scale for the x-axis. As the age groups are ordinal, we use the average age of each group for this conversion.
+For the following plot, we use a density plot to visualize this distribution.
+
+```{r}
+age_number_data <- cleaned_data %>%
+  select(Age_Group, Cardio_Condition, Dementia_risk) %>%
+  mutate(Cardio_Condition = ifelse(Cardio_Condition == 1, "With Heart", "Without Heart"),
+         # Convert the age group to the average age of that group slighly abusing the fact that the age groups
+         # are sorted alphabetically which means that the factors are also sorted that than can be multiplied.
+         Age_Group_number = as.numeric(Age_Group)*5 - 3)
+
+ggplot(age_number_data, aes(x = Dementia_risk, fill = Cardio_Condition)) +
+  geom_density(alpha = 0.5) +
+  labs(title = "Distribution of the risk of dementia for people with and without cardiovascular conditions",
+       x = "Predicted Risk of Dementia",
+       y = "Density",
+       fill = "Presence of Cardiovascular Conditions")+
+  theme(legend.position = "bottom")
+```
+
+The plot shows that there is a tendency for the peaks at higher dementia risk to belong to the group with cardiovascular conditions.
 This might suggest that the presence of cardiovascular conditions increases the risk of dementia. However, it remains
 unknown if this is a causal relationship or if other factors are at play. Namely, that those with cardiovascular conditions
 are also older and that age is a significant factor in the risk of dementia. We explore this relationship further next.
 ```{r}
-truncated_data <- cleaned_data %>%
-  select(Age_Group, Cardio_Condition, Dementia_risk) %>%
-  mutate(Cardio_Condition = ifelse(Cardio_Condition == 1, "With Heart", "Without Heart"),
-         # Convert the age group to the average age of that group slighly abusing the fact that the age groups are
-         # sorted alphabetically which means that the factors are also sorted that than can be multiplied.
-         Age_Group_number = as.numeric(Age_Group)*5 - 3)
-
-ggplot(truncated_data, aes(x = Dementia_risk, fill = Cardio_Condition)) +
-  geom_density(alpha = 0.5) +
-  labs(title = "Predicted Risk of Dementia by Age Group",
-       x = "Predicted Risk of Dementia",
-       y = "Density",
-       fill = "Age Group")
+ggplot(age_number_data, aes(x = Age_Group_number, fill = Cardio_Condition)) +
+        geom_density(alpha = 0.5) +
+        labs(title = "Distribution of the age of people with and without cardiovascular conditions",
+                x = "Age (years)",
+                y = "Density",
+                fill = "Presence of Cardiovascular Conditions") +
+        theme(legend.position = "bottom")
 ```
-The following plot showcases the age distributions grouped by the presence of cardiovascular conditions and showcases
+
+
+The above plot showcases the age distributions grouped by the presence of cardiovascular conditions and showcases
 that the distributions do not differ too much from each other. There is, however, a slightly higher shift towards the older
 age groups in the group with cardiovascular conditions.
-```{r}
-ggplot(truncated_data, aes(x = Age_Group_number, fill = Cardio_Condition)) +
-        geom_density(alpha = 0.5) +
-        labs(title = "Predicted Risk of Dementia by Age Group",
-                x = "Predicted Risk of Dementia",
-                y = "Density",
-                fill = "Age Group")
 
-avg_risk <- relavant_data %>%
-        group_by(Age_Group) %>%
-        summarise(avg_risk = mean(Dementia_risk, na.rm = TRUE))
-```
-```{r}
-ggplot(avg_risk, aes(x = Age_Group, y = avg_risk, fill = Age_Group)) +
-        geom_bar(stat = "identity") +
-        labs(title = "Average Predicted Risk of Dementia by Age Group",
-                x = "Age Group",
-                y = "Average Predicted Risk of Dementia",
-                fill = "Age Group")
-```
 ```{r}
 model_exp <- lm(log(Dementia_risk) ~ as.numeric(Age_Group), data = cleaned_data)
 model_lin <- lm(Dementia_risk ~ as.numeric(Age_Group), data = cleaned_data)
