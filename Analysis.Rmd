@@ -9,6 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(visdat)
+library(dplyr)
 ```
 
 ### Our Idea
@@ -25,7 +26,7 @@ We believe this for the following reasons:
 
 1. **Aging and Cognitive Decline**
    + Aging is the primary risk factor for cognitive decline and dementia. The age group 65-69 falls into a critical period when many individuals begin to show early signs of cognitive impairment, which may develop into dementia. For example, the risk of Alzheimer's disease growths exponentially with age from less than 5% at 65 to 40% beyond the age of 85 [See The Impact of Age on Cognition]
-   + Neurological resilience diminishes with age, making the brain more vulnerable to damage from systemic conditions like cardiovascular diseases [See Aging leads to altered microglial function that reduces brain resiliency increasing vulnerability to neurodegenerative diseases].
+   + Neurological  resilience diminishes with age, making the brain more vulnerable to damage from systemic conditions like cardiovascular diseases [See Aging leads to altered microglial function that reduces brain resiliency increasing vulnerability to neurodegenerative diseases].
    + Sleep quality decreases with growing age, which affects the glymphatic system. Lower glymphatic clearance may lead to proteine accumulation in the brain, which is associated with neurodegenerative diseases like Alzheimer's. [See Glymphatic failure as a final common pathway to dementia]
 2. **Cardiovascular Conditions and Cerebral Health**
    + Cardiovascular conditions such as angina, atrial fibrillation, and coronary artery disease can impair blood flow to the brain, leading to vascular contributions to cognitive impairment and dementia. Reduced blood flow and microvascular damage to the brain could accelerate neurodegeneration.[See Neurovascular dysfunction and neurodegeneration in dementia and Alzheimer's disease]
@@ -82,9 +83,11 @@ colnames(data) <- gsub(pattern = "age group:  ", replacement ="ag", colnames(dat
     gsub(pattern = " -  ", replacement ="_", colnames(data)) %>%
     gsub(pattern = " ", replacement ="", colnames(data)) %>%
     gsub(pattern = "ag5_9", replacement = "ag05_9", colnames(data))
+
 data %>%
   select(ag0_4, Angina, AF, CAD, Dementia_risk) %>%
     head()
+
 
 ```
 
@@ -102,7 +105,7 @@ cleaned_data <- data %>%
         filter(Age_Group_Value == 1) %>%
         select(-Age_Group_Value) %>%
         mutate(Age_Group = as.factor(Age_Group))
-head(cleaned_data %>% select(personId, Age_Group, Angina, AF, CAD, Cardio_Condition))
+head(cleaned_data)
 ```
 The data now contains the columns `r colnames(cleaned_data)` and `r nrow(cleaned_data)` rows from the initial `r ncol(tuesdata)` columns and `r nrow(tuesdata)` rows.
 
@@ -180,7 +183,28 @@ ggplot(avg_risk, aes(x = Age_Group, y = avg_risk, fill = Age_Group)) +
                 y = "Average Predicted Risk of Dementia",
                 fill = "Age Group")
 ```
+```{r}
+model_exp <- lm(log(Dementia_risk) ~ as.numeric(Age_Group), data = cleaned_data)
+model_lin <- lm(Dementia_risk ~ as.numeric(Age_Group), data = cleaned_data)
+model_quad <- lm(sqrt(Dementia_risk) ~ as.numeric(Age_Group), data = cleaned_data)
+r_squared_exp <- summary(model_exp)$r.squared
+r_squared_lin <- summary(model_lin)$r.squared
+r_squared_quad <- summary(model_quad)$r.squared
+cleaned_data$predicted_y_log <- exp(predict(model_exp, newdata = cleaned_data))
+cleaned_data$predicted_y_lin <- predict(model_lin, newdata = cleaned_data)
+cleaned_data$predicted_y_quad <- predict(model_quad, newdata = cleaned_data)^2
 
+ggplot(cleaned_data, aes(x = as.numeric(Age_Group), y = Dementia_risk)) +
+        geom_point() +
+        geom_line(aes(y = predicted_y_log), color = "blue")  +
+        geom_line(aes(y = predicted_y_lin), color = "red") +
+        geom_line(aes(y = predicted_y_quad), color = "green") +
+        labs(title = "Predicted Risk of Dementia by Age Group",
+                x = "Age Group",
+                y = "Predicted Risk of Dementia",
+                color = "Model Type")
+
+```
 ## Hypothesis Testing
 To test the hypothesis that patients aged 65-69 with prior cardiovascular conditions have a higher predicted risk of dementia compared to other age groups with similar conditions, we perform the following statistical analysis:
 
