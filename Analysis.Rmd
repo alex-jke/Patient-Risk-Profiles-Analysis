@@ -242,25 +242,33 @@ that the distributions do not differ too much from each other. There is, however
 age groups in the group with cardiovascular conditions.
 
 ```{r}
-model_exp <- lm(log(Dementia_risk) ~ as.numeric(Age_Group), data = cleaned_data)
-model_lin <- lm(Dementia_risk ~ as.numeric(Age_Group), data = cleaned_data)
-model_quad <- lm(sqrt(Dementia_risk) ~ as.numeric(Age_Group), data = cleaned_data)
-r_squared_exp <- summary(model_exp)$r.squared
-r_squared_lin <- summary(model_lin)$r.squared
-r_squared_quad <- summary(model_quad)$r.squared
-cleaned_data$predicted_y_log <- exp(predict(model_exp, newdata = cleaned_data))
-cleaned_data$predicted_y_lin <- predict(model_lin, newdata = cleaned_data)
-cleaned_data$predicted_y_quad <- predict(model_quad, newdata = cleaned_data)^2
+cardio <- cleaned_data %>%
+  filter(Cardio_Condition == 1) %>%
+  select(Age_Group, Dementia_risk)
+no_cardio <- cleaned_data %>%
+  filter(Cardio_Condition == 0) %>%
+  select(Age_Group, Dementia_risk)
 
-ggplot(cleaned_data, aes(x = as.numeric(Age_Group), y = Dementia_risk)) +
-        geom_point() +
-        geom_line(aes(y = predicted_y_log), color = "blue")  +
-        geom_line(aes(y = predicted_y_lin), color = "red") +
-        geom_line(aes(y = predicted_y_quad), color = "green") +
-        labs(title = "Predicted Risk of Dementia by Age Group",
-                x = "Age Group",
-                y = "Predicted Risk of Dementia",
-                color = "Model Type")
+cardio_exp <- lm(log(Dementia_risk) ~ as.numeric(Age_Group), data = cardio)
+no_cardio_exp <- lm(log(Dementia_risk) ~ as.numeric(Age_Group), data = no_cardio)
+
+cardio$predicted_cardio <- exp(predict(cardio_exp, new_data = cardio))
+no_cardio$predicted_non_cardio <- exp(predict(no_cardio_exp, new_data = no_cardio))
+
+ggplot() +
+  geom_point(data = cardio, aes(x = Age_Group, y = Dementia_risk), color = "red") +
+  geom_line(data = cardio, aes(x = as.numeric(Age_Group), y = predicted_cardio), color = "red") +
+
+  geom_point(data = no_cardio, aes(x = Age_Group, y = Dementia_risk), color = "blue") +
+  geom_line(data = no_cardio, aes(x = as.numeric(Age_Group), y = predicted_non_cardio), color = "blue") +
+
+  labs(title = "Predicted Risk of Dementia by Age Group, with and without cardiovascular conditions",
+         x = "Age Group",
+         y = "Predicted Risk of Dementia",
+         color = "Presence of Cardiovascular Conditions") +
+    theme(legend.position = "bottom")
+```
+```{r}
 
 ```
 ## Hypothesis Testing
