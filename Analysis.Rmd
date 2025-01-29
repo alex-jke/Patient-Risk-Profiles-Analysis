@@ -263,6 +263,7 @@ ggplot(cleaned_data, aes(x = as.numeric(Age_Group), y = Dementia_risk)) +
                 color = "Model Type")
 
 ```
+
 ## Hypothesis Testing
 
 ### First part of the hypothesis:
