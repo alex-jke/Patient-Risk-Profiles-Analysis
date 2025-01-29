@@ -35,7 +35,7 @@ We believe this for the following reasons:
    + This age group is often where early signs of dementia begin to appear. Cardiovascular conditions can act as triggers to or exacerbate the progression of this process.
 
 #### Presumed Causal Relationships:
-![Causal Relationships](causality_graph.svg)
+![Causal Relationships](data/causality_graph.svg)
 
 ## Get the dataset and check the na values
 ```{r}
@@ -74,45 +74,103 @@ data <- tuesdata %>%
          Angina = `Angina events in prior year`,
          AF = `Atrial Fibrillation, incident in prior year`,
          CAD = `Coronary artery disease (CAD) in prior year`,
-         Dementia_risk = `predicted risk of Dementia`)
-colnames(data) <- gsub(pattern = "age group:  ", replacement ="ag", colnames(data))
-colnames(data) <- gsub(pattern = " -  ", replacement ="_", colnames(data))
-colnames(data) <- gsub(pattern = " ", replacement ="", colnames(data))
-head(data)
+         HF = `Heart failure in prior year`,
+         HVD = `Heart valve disorder in prior year`,
+         Dementia_risk = `predicted risk of Dementia`,
+  )
+colnames(data) <- gsub(pattern = "age group:  ", replacement ="ag", colnames(data)) %>%
+    gsub(pattern = " -  ", replacement ="_", colnames(data)) %>%
+    gsub(pattern = " ", replacement ="", colnames(data)) %>%
+    gsub(pattern = "ag5_9", replacement = "ag05_9", colnames(data))
+data %>%
+  select(ag0_4, Angina, AF, CAD, Dementia_risk) %>%
+    head()
+
 ```
 
 ## Feature Engineering:
-Create one column containing if cardiovascular happened.
+To improve the usability of the dataset and enable meaningful analysis,  a new variable, Cardio_Condition, was created, which indicates the presence of cardiovascular disease. This binary feature was derived from existing variables indicating certain conditions such as angina pectoris, atrial fibrillation, coronary artery disease, heart failure and valve heart disorder. In addition, the dataset was transformed so that each person could be assigned to a single corresponding age group, allowing for a more streamlined analysis. These transformations should facilitate the examination of age-specific trends in dementia risk and their potential association with cardiovascular health.
+
 ```{r}
-data <- data %>%
+cleaned_data <- data %>%
         mutate(Cardio_Condition = ifelse(
-                Angina == 1 | AF == 1 | CAD == 1, 1, 0)
+                Angina == 1 | AF == 1 | CAD == 1 | HF == 1 | HVD == 1, 1, 0)
         ) %>%
-        pivot_longer(cols = starts_with("ag"),
+        pivot_longer(cols = starts_with("ag"), # make it appear longer
                      names_to = "Age_Group",
                      values_to = "Age_Group_Value") %>%
         filter(Age_Group_Value == 1) %>%
-        select(-Age_Group_Value)
-head(data %>% select(personId, Age_Group, Angina, AF, CAD, Cardio_Condition))
+        select(-Age_Group_Value) %>%
+        mutate(Age_Group = as.factor(Age_Group))
+head(cleaned_data %>% select(personId, Age_Group, Angina, AF, CAD, Cardio_Condition))
 ```
-The data now contains the columns `r colnames(data)` and `r nrow(data)` rows.
+The data now contains the columns `r colnames(cleaned_data)` and `r nrow(cleaned_data)` rows from the initial `r ncol(tuesdata)` columns and `r nrow(tuesdata)` rows.
+
 ## Exploratory Data Analysis
+The exploratory data analysis focuses on understanding the relationship between cardiovascular conditions and dementia risk across different age groups. The data is grouped by age and the presence or absence of cardiovascular conditions. For each group, the average predicted dementia risk is calculated, enabling comparisons between individuals with and without cardiovascular conditions, as well as among different age categories.
+
+Bar plots visualize the average dementia risks for both groups, showing that individuals with cardiovascular conditions generally have higher predicted risks of dementia across most age groups. The relative difference in dementia risk between these groups is also calculated and visualized, highlighting age groups where cardiovascular conditions are associated with greater disparities in risk.
+
+Density plots explore the distribution of predicted dementia risks within selected age groups, providing insights into how risk is distributed across individuals. Additionally, the average predicted dementia risk for each age group is summarized and visualized, offering a good view of how dementia risk varies with age. These analyses lay the groundwork for hypothesis testing and deeper investigation into the interactions between age, cardiovascular health, and dementia risk.
 ```{r}
-ggplot(data, aes(x = Dementia_risk, fill = Age_Group)) +
+heart_people <- cleaned_data %>%
+        filter(Cardio_Condition == 1) %>% # only the people with heart
+        group_by(Age_Group) %>%
+        summarise(with_heart = n(), Dementia_risk_heart = mean(Dementia_risk, na.rm = TRUE))
+
+no_heart_people <- cleaned_data %>%
+        filter(Cardio_Condition == 0) %>% # only the people without heart
+        group_by(Age_Group) %>%
+        summarise(without_heart = n(), Dementia_risk_no_heart = mean(Dementia_risk, na.rm = TRUE))
+
+all_people <- no_heart_people %>%
+        left_join(heart_people, by = "Age_Group") %>%
+        mutate(Dementia_risk_diff = Dementia_risk_heart - Dementia_risk_no_heart) %>%
+        mutate(amount = without_heart + with_heart) %>%
+        select(Age_Group, Dementia_risk_diff, Dementia_risk_heart, Dementia_risk_no_heart, amount, with_heart) %>%
+        arrange(desc(Dementia_risk_diff))
+
+all_people
+
+# plot both the avg dementia risk for people with and without heart conditions
+ggplot(all_people, aes(x = Age_Group)) +
+        geom_bar(aes(y = Dementia_risk_heart, fill = "With Heart"), stat = "identity") +
+        geom_bar(aes(y = Dementia_risk_no_heart, fill = "Without Heart"), stat = "identity", width = 0.5) +
+        labs(title = "Average Predicted Risk of Dementia by Age Group",
+                x = "Age Group",
+                y = "Average Predicted Risk of Dementia",
+                fill = "Heart Condition")
+
+relative_difference <- all_people %>%
+        mutate(relative_diff = Dementia_risk_heart / Dementia_risk_no_heart) %>%
+        arrange(desc(relative_diff))
+
+ggplot(relative_difference, aes(x = Age_Group, y = relative_diff, fill = Age_Group)) +
+        geom_bar(stat = "identity") +
+        labs(title = "Relative Difference in Predicted Risk of Dementia by Age Group",
+                x = "Age Group",
+                y = "Relative Difference in Predicted Risk of Dementia",
+                fill = "Age Group")
+
+relavant_data <- cleaned_data
+
+truncated_data <- relavant_data %>% filter(Age_Group %in% c("ag60_64", "ag65_69", "ag70_74"))#, "ag75_79", "ag80_84", "ag85_89", "ag90_94", "ag95_99"))
+
+ggplot(truncated_data, aes(x = Dementia_risk, fill = Age_Group)) +
         geom_density(alpha = 0.5) +
         labs(title = "Predicted Risk of Dementia by Age Group",
                 x = "Predicted Risk of Dementia",
                 y = "Density",
                 fill = "Age Group")
 
-ggplot(data, aes(x = Dementia_risk, y = 1, color = Age_Group, fill = Age_Group)) +
+ggplot(relavant_data, aes(x = Dementia_risk, y = 1, color = Age_Group, fill = Age_Group)) +
         #geom_jitter(width = 0.01, height = 0.0) +
         geom_bar(stat = "identity")
         labs(title = "Predicted Risk of Dementia by Age Group",
                 x = "Predicted Risk of Dementia",
                 y = "1",
                 color = "Age Group")
-avg_risk <- data %>%
+avg_risk <- relavant_data %>%
         group_by(Age_Group) %>%
         summarise(avg_risk = mean(Dementia_risk, na.rm = TRUE))
 ggplot(avg_risk, aes(x = Age_Group, y = avg_risk, fill = Age_Group)) +
@@ -124,17 +182,59 @@ ggplot(avg_risk, aes(x = Age_Group, y = avg_risk, fill = Age_Group)) +
 ```
 
 ## Hypothesis Testing
+To test the hypothesis that patients aged 65-69 with prior cardiovascular conditions have a higher predicted risk of dementia compared to other age groups with similar conditions, we perform the following statistical analysis:
+
+1. Subset the Data
+
+Filter the data to include only rows where cardiovascular conditions are present and separate it into two groups:
++ Patients aged 65-69.
++ Patients in other age groups.
 ```{r}
+subset_65_69 <- cleaned_data %>%
+  filter(Age_Group == "ag65_69", Cardio_Condition == 1)
+
+subset_others <- cleaned_data %>%
+  filter(Age_Group != "ag65_69", Cardio_Condition == 1)
 ```
 
-## Results
-results
+2. Perform a Two-Sample t-Test
+We compare the mean predicted dementia risk between the two groups using a two-sample t-test. The null hypothesis (H₀) is that the means are equal, and the alternative hypothesis (H₁) is that the mean for the 65-69 age group is higher.
 
+```{r}
+dementiarisk_65_69 <- data.frame(
+  Dementia_risk = c(subset_65_69$Dementia_risk, subset_65_69$Dementia_risk)) # as the data is too small
+dementiarisk_others <- subset_others$Dementia_risk
+t_test_result <- t.test(
+  dementiarisk_65_69,
+  dementiarisk_others,
+  alternative = "greater",
+  var.equal = FALSE
+)
+t_test_result
+p_value <- t_test_result$p.value
+```
+If the p-value is less than 0.05, we reject the null hypothesis and conclude that patients aged 65-69 with prior cardiovascular conditions have a higher predicted risk of dementia compared to other age groups with similar conditions. Otherwise, we fail to reject the null hypothesis.
+Our p-value is `r p_value`. Therefore, we fail to reject the null hypothesis. This suggests that there is no statistically significant difference in the predicted risk of dementia between patients aged 65-69 with prior cardiovascular conditions and patients in other age groups with similar conditions, given the data we have.
+
+## Results
+The analysis aimed to examine the relationship between cardiovascular conditions and dementia risk across age groups. However, it is crucial to note that the hypothesis test relied on a very limited dataset with only one data point (which was duplicated), severely limiting the statistical power and reliability of the results. Key findings include:
+1.	Average Predicted Risk:
+   + Patients with cardiovascular conditions generally exhibited a higher predicted risk of dementia than those without such conditions across all age groups.
+   + The age group 65-69 showed no statistically significant difference in dementia risk compared to other age groups with similar cardiovascular conditions, as indicated by a p-value of `r p_value` (greater than 0.05).
+2. Relative Risk Differences:
+   + While the age group 65-69 had a marginally higher average dementia risk, than its neighboring age groups, the differences were not significant enough to confirm a unique vulnerability compared to other groups.
+3.	Visualization Insights:
+   + The bar plots and density distributions highlighted variations in predicted dementia risks across age groups, with a trend of increased risk in older age groups.
+   + The increase in dementia risk when cardiovascular conditions were present seems to be more pronounced in younger age groups. This could be due to the fact that without any cardiovascular conditions, the risk of dementia is generally lower in younger age groups, making the relative increase more noticeable.
+   +
 ## Conclusion
-conclusion
+The hypothesis that patients aged 65-69 with prior cardiovascular conditions are at a higher predicted risk of dementia compared to other age groups was inconclusive due to the dataset’s severe limitations. The reliance on only two data points for the hypothesis test undermines the ability to draw meaningful conclusions.
+
+The observed trends suggest potential relationships worth exploring, but the results cannot confirm or refute the hypothesis in its current form.
 
 ## Next Steps
-next steps
+1. Increase Sample Size: Obtain a larger dataset with more diverse and real-world patient records to perform a statistically valid analysis.
+2. Refine Data: Ensure age groups and conditions are sufficiently represented to support meaningful subgroup comparisons.
 
 ## Sources:
 1. Alonso A, Arenas de Larriva AP. Atrial Fibrillation, Cognitive Decline And Dementia. Eur Cardiol. 2016 Summer;11(1):49-53. doi: 10.15420/ecr.2016:13:2. PMID: 27547248; PMCID: PMC4988519.
