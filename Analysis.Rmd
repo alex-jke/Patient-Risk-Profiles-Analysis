@@ -208,7 +208,7 @@ For the following plot, we use a density plot to visualize this distribution.
 ```{r}
 age_number_data <- cleaned_data %>%
   select(Age_Group, Cardio_Condition, Dementia_risk) %>%
-  mutate(Cardio_Condition = ifelse(Cardio_Condition == 1, "With Heart", "Without Heart"),
+  mutate(Cardio_Condition = ifelse(Cardio_Condition == 1, "With CVC", "Without CVC"),
          # Convert the age group to the average age of that group slighly abusing the fact that the age groups
          # are sorted alphabetically which means that the factors are also sorted that than can be multiplied.
          Age_Group_number = as.numeric(Age_Group)*5 - 3)
@@ -225,7 +225,7 @@ ggplot(age_number_data, aes(x = Dementia_risk, fill = Cardio_Condition)) +
 The plot shows that there is a tendency for the peaks at higher dementia risk to belong to the group with cardiovascular conditions.
 This might suggest that the presence of cardiovascular conditions increases the risk of dementia. However, it remains
 unknown if this is a causal relationship or if other factors are at play. Namely, that those with cardiovascular conditions
-are also older and that age is a significant factor in the risk of dementia. We explore this relationship further next.
+are also older and that age is a significant factor in the risk of dementia. That would be a spurious correlation, because both the probability for cardiovascular conditions, and the risk of dementia increases with age. We explore this relationship further next.
 ```{r}
 ggplot(age_number_data, aes(x = Age_Group_number, fill = Cardio_Condition)) +
         geom_density(alpha = 0.5) +
