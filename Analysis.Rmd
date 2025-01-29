@@ -20,9 +20,13 @@ In order to do this we use a tidy-tuesday dataset (patient risk profiles) that "
 While this dataset brings the advantage of indirectly containing a lot of data, it only simulated 100 people. This means we are forced to rely, to some extent, on the previously done statistics, as the statistical power of 100 datapoints is limited. Another limitation, related to the first is that the values provided in the dataset are the results of the regression model the authors developed. Thus, we are bounded by their statistical regression model. Despite this, we believe these factors to be negligible; The dataset was published as a tidy-tuesday dataset, which indicates a reliability and quality sufficient for the scope of this project.
 
 ### Hypothesis:
-We hypothezise that the relative risk of dementia of patients with cardiovascular-related conditions compared to healthy individuals (quotient of risk of cardio-vascular patients and risk of healthy individuals) is higher in the age group 65-69 than in other age groups with similar conditions.
+We hypothesize that the presence of cardiovascular conditions is associated with an increased predicted risk of dementia across all age groups, with the magnitude of this association varying by age. Specifically, we expect that the relative risk of dementia for individuals with cardiovascular conditions compared to those without will peak in patients age 65-69 than in younger age groups.
 
-We believe this for the following reasons:
+The reasons for us to believe this hypothesis can be grouped into two clusters:
+Firstly, there are reasons that suggest the generally elevated risk of dementia in patients with cardiovascular conditions.
+Secondly, the varying relative risk is based on other assumptions.
+
+#### Reasons for the general elevated risk of dementia in patients with cardiovascular conditions:
 
 1. **Aging and Cognitive Decline**
    + Aging is the primary risk factor for cognitive decline and dementia. The age group 65-69 falls into a critical period when many individuals begin to show early signs of cognitive impairment, which may develop into dementia. For example, the risk of Alzheimer's disease growths exponentially with age from less than 5% at 65 to 40% beyond the age of 85 [See The Impact of Age on Cognition]
@@ -34,6 +38,15 @@ We believe this for the following reasons:
 3. **Heightened Risk in the 65-69 Age Group**
    + At ages 65-69, patients are more likely to experience the combined effects of aging and systemic diseases compared to younger groups, but they may not yet have the compensatory mechanisms seen in older populations who have "adapted" to chronic health changes. Furthermore, the unwillingness to acknowledge one-self aging might adversely affect the willingness to seek these adaptions.
    + This age group is often where early signs of dementia begin to appear. Cardiovascular conditions can act as triggers to or exacerbate the progression of this process.
+
+#### Reasons for the varying relative risk of dementia in patients with cardiovascular conditions compared to those without:
+1. **Earlier Onset of Vulnerability of Patients with Cardiovascular Conditions**
+   + The presence of cardiovascular conditions may accelerate the onset of cognitive decline and dementia, leading to a more pronounced relative risk in younger age groups.
+   + The protectory mechanisms that typically delay the onset of dementia in older populations may not be as effective in younger individuals with cardiovascular conditions, leading to a earlier rise in dementia risk.
+
+2. **Shift in self health awareness**
+    + Patients with diagnosed health conditions are more likely to have a heightened awareness of their health and seek medical attention when needed. This could lead to earlier detection of cognitive decline and dementia, especially in younger age groups, therefore leading to a higher relative risk of dementia in these groups.
+
 
 #### Presumed Causal Relationships:
 ![Causal Relationships](data/causality_graph.svg)
