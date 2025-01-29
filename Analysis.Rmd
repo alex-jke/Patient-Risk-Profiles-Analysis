@@ -49,7 +49,7 @@ Secondly, the varying relative risk is based on other assumptions.
 
 
 #### Presumed Causal Relationships:
-![Causal Relationships](data/causality_graph.svg)
+![Causal Relationships](data/causality_graph_2.svg)
 
 ## Get the dataset and check the na values
 ```{r}
