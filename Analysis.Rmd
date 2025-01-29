@@ -20,7 +20,7 @@ In order to do this we use a tidy-tuesday dataset (patient risk profiles) that "
 While this dataset brings the advantage of indirectly containing a lot of data, it only simulated 100 people. This means we are forced to rely, to some extent, on the previously done statistics, as the statistical power of 100 datapoints is limited. Another limitation, related to the first is that the values provided in the dataset are the results of the regression model the authors developed. Thus, we are bounded by their statistical regression model. Despite this, we believe these factors to be negligible; The dataset was published as a tidy-tuesday dataset, which indicates a reliability and quality sufficient for the scope of this project.
 
 ### Hypothesis:
-Patients aged 65-69 with prior occurrences of cardiovascular-related conditions (e.g., angina, atrial fibrillation, coronary artery disease) are at higher predicted risk of dementia compared to other age groups with similar conditions.
+We hypothezise that the relative risk of dementia of patients with cardiovascular-related conditions compared to healthy individuals (quotient of risk of cardio-vascular patients and risk of healthy individuals) is higher in the age group 65-69 than in other age groups with similar conditions.
 
 We believe this for the following reasons:
 
