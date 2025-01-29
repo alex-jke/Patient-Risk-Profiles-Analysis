@@ -51,7 +51,7 @@ Secondly, the varying relative risk is based on other assumptions.
 
 
 #### Presumed Causal Relationships:
-![Causal Relationships](data/causality_graph_2.svg)
+![Causal Relationships](data/causality_graph_2.svg){width=50%}
 
 ## Get the dataset and check the na values
 ```{r}
@@ -82,7 +82,7 @@ present_percent <- visualization_df %>%
 #### As can be seen also in the visualization above, `r present_percent*100`% of the data is present.
 
 ### Data Cleaning
-Now select
+The dataset contains `r ncol(tuesdata)` columns and `r nrow(tuesdata)` rows. We will focus on the columns related to age groups, cardiovascular conditions, and predicted dementia risk for this analysis. The following code snippet selects these columns and renames them for easier reference.
 ```{r}
 data <- tuesdata %>%
   select(personId,
@@ -106,7 +106,7 @@ data %>%
 
 ```
 
-## Feature Engineering:
+## Data Wrangling:
 To improve the usability of the dataset and enable meaningful analysis,  a new variable, Cardio_Condition, was created, which indicates the presence of cardiovascular disease. This binary feature was derived from existing variables indicating certain conditions such as angina pectoris, atrial fibrillation, coronary artery disease, heart failure and valve heart disorder. In addition, the dataset was transformed so that each person could be assigned to a single corresponding age group, allowing for a more streamlined analysis. These transformations should facilitate the examination of age-specific trends in dementia risk and their potential association with cardiovascular health.
 
 ```{r}
@@ -263,13 +263,58 @@ ggplot(cleaned_data, aes(x = as.numeric(Age_Group), y = Dementia_risk)) +
 
 ```
 ## Hypothesis Testing
+
+### First part of the hypothesis:
+To test the hypothesis that the presence of cardiovascular conditions is associated with an increased predicted risk of dementia across all age groups, we perform the following statistical analysis:
+
+1. Subset the Data
+2. Perform a Two-Sample t-Test
+3. Interpret the Results
+
+#### Subset the Data
+Separate it into two groups:
++ Patients with cardiovascular conditions.
++ Patients without cardiovascular conditions.
+
+```{r}
+subset_with_heart <- cleaned_data %>%
+  filter(Cardio_Condition == 1)
+
+subset_without_heart <- cleaned_data %>%
+    filter(Cardio_Condition == 0)
+
+```
+
+#### Perform a Two-Sample t-Test
+We compare the mean predicted dementia risk between the two groups using a two-sample t-test. The null hypothesis (H₀) is that the means are equal, and the alternative hypothesis (H₁) is that the mean for the group with cardiovascular conditions is higher. We also need to account for the unequal age distribution in the two groups. As a lower age is associated with a lower risk of dementia.
+
+```{r}
+dementiarisk_with_heart <- subset_with_heart$Dementia_risk
+dementiarisk_without_heart <- subset_without_heart$Dementia_risk
+t_test_result <- t.test(
+  dementiarisk_with_heart,
+  dementiarisk_without_heart,
+  alternative = "greater",
+  var.equal = FALSE
+)
+p_value_heart <- t_test_result$p.value
+t_test_result
+
+```
+If the p-value is less than 0.05, we reject the null hypothesis and conclude that the presence of cardiovascular conditions is associated with an increased predicted risk of dementia. Otherwise, we fail to reject the null hypothesis.
+
+Our p-value is `r p_value_heart`. Therefore, we are unable to reject the null hypothesis. This suggests that there is no statistically significant difference in the predicted risk of dementia between patients with and without cardiovascular conditions, given the data we have.
+
+
+### Second part of the hypothesis:
 To test the hypothesis that patients aged 65-69 with prior cardiovascular conditions have a higher predicted risk of dementia compared to other age groups with similar conditions, we perform the following statistical analysis:
 
 1. Subset the Data
 
 Filter the data to include only rows where cardiovascular conditions are present and separate it into two groups:
-+ Patients aged 65-69.
-+ Patients in other age groups.
+
+   + Patients aged 65-69.
+   + Patients in other age groups.
 ```{r}
 subset_65_69 <- cleaned_data %>%
   filter(Age_Group == "ag65_69", Cardio_Condition == 1)
@@ -295,30 +340,36 @@ t_test_result
 p_value <- t_test_result$p.value
 ```
 If the p-value is less than 0.05, we reject the null hypothesis and conclude that patients aged 65-69 with prior cardiovascular conditions have a higher predicted risk of dementia compared to other age groups with similar conditions. Otherwise, we fail to reject the null hypothesis.
+
 Our p-value is `r p_value`. Therefore, we fail to reject the null hypothesis. This suggests that there is no statistically significant difference in the predicted risk of dementia between patients aged 65-69 with prior cardiovascular conditions and patients in other age groups with similar conditions, given the data we have.
 
 ## Results
-The analysis aimed to examine the relationship between cardiovascular conditions and dementia risk across age groups. However, it is crucial to note that the hypothesis test relied on a very limited dataset with only one data point (which was duplicated), severely limiting the statistical power and reliability of the results. Key findings include:
+The analysis aimed to examine the relationship between cardiovascular conditions and dementia risk across age groups. However, it is crucial to note that the hypothesis test relied on a very limited dataset with only one data point (which was duplicated for the second part of the hypothesis), severely limiting the statistical power and reliability of the results. Key findings include:
 
 1.	Average Predicted Risk:
-   + Patients with cardiovascular conditions generally exhibited a higher predicted risk of dementia than those without such conditions across all age groups.
-   + The age group 65-69 showed no statistically significant difference in dementia risk compared to other age groups with similar cardiovascular conditions, as indicated by a p-value of `r p_value` (greater than 0.05).
+   + Patients with cardiovascular conditions seem to generally exhibited a higher predicted risk of dementia than those without such conditions across all age groups, when looking at the graphs. The hypothesis test did not confirm this, as indicated by a p-value of `r p_value_heart` (greater than 0.05).
+   + Additionally, the age group 65-69 showed no statistically significant difference in dementia risk compared to other age groups with similar cardiovascular conditions, as indicated by a p-value of `r p_value` (greater than 0.05).
 
 2. Relative Risk Differences:
+
+   + The relative difference in predicted dementia risk between individuals with and without cardiovascular conditions varied across age groups, with the highest relative difference observed in the age group 40-44. This variation could be due to the small sample size and inherent variability in the data.
+
    + While the age group 65-69 had a marginally higher average dementia risk, than its neighboring age groups, the differences were not significant enough to confirm a unique vulnerability compared to other groups.
 
 3.	Visualization Insights:
+
    + The bar plots and density distributions highlighted variations in predicted dementia risks across age groups, with a trend of increased risk in older age groups.
-   + The increase in dementia risk when cardiovascular conditions were present seems to be more pronounced in younger age groups. This could be due to the fact that without any cardiovascular conditions, the risk of dementia is generally lower in younger age groups, making the relative increase more noticeable.
+
+   + The increase in dementia risk when cardiovascular conditions were present seems to be more pronounced in younger age groups. This could be due to the fact that without any cardiovascular conditions, the risk of dementia is generally lower in younger age groups, making the relative increase more noticeable. Or it could be due to the small sample size and inherent variability in the data.
 
 ## Conclusion
-The hypothesis that patients aged 65-69 with prior cardiovascular conditions are at a higher predicted risk of dementia compared to other age groups was inconclusive due to the dataset’s severe limitations. The reliance on only two data points for the hypothesis test undermines the ability to draw meaningful conclusions.
 
-The observed trends suggest potential relationships worth exploring, but the results cannot confirm or refute the hypothesis in its current form.
+Both parts of the hypothesis were not supported by the analysis due to the dataset's limitations. The small sample size of 100 patients and the uneven distribution of patients across age groups limited the statistical power and generalizability of the results. The analysis provided some insights into the relationship between cardiovascular conditions and dementia risk but could not draw definitive conclusions. The observed trends suggest potential relationships worth exploring in a larger and more diverse dataset.
 
 ## Next Steps
-1. Increase Sample Size: Obtain a larger dataset with more diverse and real-world patient records to perform a statistically valid analysis.
-2. Refine Data: Ensure age groups and conditions are sufficiently represented to support meaningful subgroup comparisons.
+
+   1. Increase Sample Size: Obtain a larger dataset with more diverse and real-world patient records to perform a statistically valid analysis.
+   2. Refine Data: Ensure age groups and conditions are sufficiently represented to support meaningful subgroup comparisons.
 
 ## Sources:
 1. Alonso A, Arenas de Larriva AP. Atrial Fibrillation, Cognitive Decline And Dementia. Eur Cardiol. 2016 Summer;11(1):49-53. doi: 10.15420/ecr.2016:13:2. PMID: 27547248; PMCID: PMC4988519.
