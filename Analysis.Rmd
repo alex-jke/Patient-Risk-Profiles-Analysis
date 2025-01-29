@@ -31,9 +31,10 @@ Secondly, the varying relative risk is based on other assumptions.
 1. **Cardiovascular Conditions and Cerebral Health**
    + Cardiovascular conditions such as angina, atrial fibrillation, and coronary artery disease can impair blood flow to the brain, leading to vascular contributions to cognitive impairment and dementia. Reduced blood flow and microvascular damage to the brain could accelerate neurodegeneration.[See Neurovascular dysfunction and neurodegeneration in dementia and Alzheimer's disease]
    + Atrial fibrillation, in particular, increases the risk of stroke and microinfarcts in the brain, both of which are linked to an increased likelihood of developing dementia. [See Atrial Fibrillation, Cognitive Decline and Dementia]
-2. **Cardiovascular Conditions at Higher Age**
+2. **Cardiovascular Conditions at Higher Age, Third reason**
    + At ages 65-69, patients are more likely to experience the combined effects of aging and systemic diseases compared to younger groups, but they may not yet have the compensatory mechanisms seen in older populations who have "adapted" to chronic health changes. Furthermore, the unwillingness to acknowledge one-self aging might adversely affect the willingness to seek these adaptions.
    + This age group is often where early signs of dementia begin to appear. Cardiovascular conditions can act as triggers to or exacerbate the progression of this process.
+   + Higher Age is both a risk factor for dementia and cardiovascular conditions.
 
 #### Reasons for the varying relative risk of dementia in patients with cardiovascular conditions compared to those without:
 1. **Earlier Onset of Vulnerability of Patients with Cardiovascular Conditions**
