@@ -271,6 +271,7 @@ ggplot() +
 ```{r}
 
 ```
+
 ## Hypothesis Testing
 
 ### First part of the hypothesis:
