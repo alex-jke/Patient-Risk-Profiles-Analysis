@@ -374,7 +374,7 @@ The analysis aimed to examine the relationship between cardiovascular conditions
 
 ## Conclusion
 
-Both parts of the hypothesis were not supported by the analysis due to the dataset's limitations. The small sample size of 100 patients and the uneven distribution of patients across age groups limited the statistical power and generalizability of the results. The analysis provided some insights into the relationship between cardiovascular conditions and dementia risk but could not draw definitive conclusions. The observed trends suggest potential relationships worth exploring in a larger and more diverse dataset.
+The analysis did not support either hypothesis, likely due to dataset limitations. The small sample size of 100 patients and the uneven distribution of patients across age groups limited the statistical power and generalizability of the results. The analysis provided some insights into the relationship between cardiovascular conditions and dementia risk but could not draw definitive conclusions. The observed trends suggest potential relationships worth exploring in a larger and more diverse dataset.
 
 ## Next Steps
 
