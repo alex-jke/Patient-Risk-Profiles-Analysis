@@ -181,7 +181,37 @@ ggplot(all_people, aes(x = Age_Group)) +
                 y = "Average Predicted Risk of Dementia",
                 fill = "Heart Condition")
 ```
+Additionally, we fitted two exponential regression models that predict the dementia risk based on the age group for people with and without cardiovascular conditions.
+The following plot visualizes the predicted dementia risk for both groups across the age groups, showing that people with cardiovascular conditions generally have higher predicted risks of dementia compared to those without.
+```{r}
+cardio <- cleaned_data %>%
+        filter(Cardio_Condition == 1) %>%
+        select(Age_Group, Dementia_risk)
+no_cardio <- cleaned_data %>%
+        filter(Cardio_Condition == 0) %>%
+        select(Age_Group, Dementia_risk)
 
+cardio_exp <- lm(log(Dementia_risk) ~ as.numeric(Age_Group), data = cardio)
+no_cardio_exp <- lm(log(Dementia_risk) ~ as.numeric(Age_Group), data = no_cardio)
+
+cardio$predicted_cardio <- exp(predict(cardio_exp, new_data = cardio))
+no_cardio$predicted_non_cardio <- exp(predict(no_cardio_exp, new_data = no_cardio))
+
+ggplot() +
+        geom_point(data = cardio, aes(x = Age_Group, y = Dementia_risk, color = "With Cardiovascular Condition")) +
+        geom_line(data = cardio, aes(x = as.numeric(Age_Group), y = predicted_cardio, color = "With Cardiovascular Condition")) +
+
+        geom_point(data = no_cardio, aes(x = Age_Group, y = Dementia_risk, color = "Without Cardiovascular Condition")) +
+        geom_line(data = no_cardio, aes(x = as.numeric(Age_Group), y = predicted_non_cardio, color = "Without Cardiovascular Condition")) +
+
+        scale_color_manual(values = c("With Cardiovascular Condition" = "red", "Without Cardiovascular Condition" = "blue")) +
+
+        labs(title = "Predicted Risk of Dementia by Age Group, with and without cardiovascular conditions",
+             x = "Age Group",
+             y = "Predicted Risk of Dementia",
+             color = "Condition") +
+        theme(legend.position = "bottom")
+```
 The plot shows consistently higher average predicted dementia risks for individuals with cardiovascular conditions compared to those without across all age groups. This trend suggests that the presence of cardiovascular conditions may be associated with an increased risk of dementia, regardless of age.
 Furthermore, we can observe this higher risk to not be of a constant magnitude across the age groups. The relative difference in predicted dementia risk between individuals with and without cardiovascular conditions is calculated and visualized in the next plot.
 
@@ -240,37 +270,6 @@ ggplot(age_number_data, aes(x = Age_Group_number, fill = Cardio_Condition)) +
 The above plot showcases the age distributions grouped by the presence of cardiovascular conditions and showcases
 that the distributions do not differ too much from each other. There is, however, a slightly higher shift towards the older
 age groups in the group with cardiovascular conditions.
-
-```{r}
-cardio <- cleaned_data %>%
-  filter(Cardio_Condition == 1) %>%
-  select(Age_Group, Dementia_risk)
-no_cardio <- cleaned_data %>%
-  filter(Cardio_Condition == 0) %>%
-  select(Age_Group, Dementia_risk)
-
-cardio_exp <- lm(log(Dementia_risk) ~ as.numeric(Age_Group), data = cardio)
-no_cardio_exp <- lm(log(Dementia_risk) ~ as.numeric(Age_Group), data = no_cardio)
-
-cardio$predicted_cardio <- exp(predict(cardio_exp, new_data = cardio))
-no_cardio$predicted_non_cardio <- exp(predict(no_cardio_exp, new_data = no_cardio))
-
-ggplot() +
-  geom_point(data = cardio, aes(x = Age_Group, y = Dementia_risk), color = "red") +
-  geom_line(data = cardio, aes(x = as.numeric(Age_Group), y = predicted_cardio), color = "red") +
-
-  geom_point(data = no_cardio, aes(x = Age_Group, y = Dementia_risk), color = "blue") +
-  geom_line(data = no_cardio, aes(x = as.numeric(Age_Group), y = predicted_non_cardio), color = "blue") +
-
-  labs(title = "Predicted Risk of Dementia by Age Group, with and without cardiovascular conditions",
-         x = "Age Group",
-         y = "Predicted Risk of Dementia",
-         color = "Presence of Cardiovascular Conditions") +
-    theme(legend.position = "bottom")
-```
-```{r}
-
-```
 
 ## Hypothesis Testing
 
