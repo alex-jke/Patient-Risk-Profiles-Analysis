@@ -1,7 +1,7 @@
 ---
-title: "Analysis"
-author: "Alex Jenke"
-date: "2024-11-22"
+title: "Analysis of the Relationship Between Cardiovascular Conditions and Dementia Risk Across Age Groups"
+author: "Alex Jenke, Laruenz Wurzel, Tom Liemann"
+date: "2025-01-31"
 output: html_document
 ---
 
